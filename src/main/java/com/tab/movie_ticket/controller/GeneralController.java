@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.tab.movie_ticket.dto.Customer;
+import com.tab.movie_ticket.dto.Movie;
 import com.tab.movie_ticket.dto.Theatre;
 import com.tab.movie_ticket.helper.AES;
+import com.tab.movie_ticket.helper.CloudinaryHelper;
 import com.tab.movie_ticket.helper.EmailSendingHelper;
 import com.tab.movie_ticket.repository.CustomerRepository;
+import com.tab.movie_ticket.repository.MovieRepository;
 import com.tab.movie_ticket.repository.TheatreRepository;
 
 import jakarta.servlet.http.HttpSession;
@@ -32,6 +36,10 @@ public class GeneralController {
 
 	@Autowired
 	EmailSendingHelper emailSendingHelper;
+	@Autowired
+	CloudinaryHelper cloudinaryHelper;
+	@Autowired
+	MovieRepository movieRepository;
 
 	@Value("${admin.email}")
 	private String adminEmail;
@@ -62,7 +70,7 @@ public class GeneralController {
 					if (AES.decrypt(customer.getPassword(), "123").equals(password)) {
 						if (customer.isVerified()) {
 							session.setAttribute("success", "Login Success As Customer");
-							session.setAttribute("customer", "customer");
+							session.setAttribute("customer", customer);
 							return "redirect:/";
 						} else {
 							customer.setOtp(new Random().nextInt(100000, 1000000));
@@ -83,7 +91,7 @@ public class GeneralController {
 
 							if (theatre.isApproved()) {
 								session.setAttribute("success", "Login Success As Theatre");
-								session.setAttribute("theatre", "theatre");
+								session.setAttribute("theatre", theatre);
 								return "redirect:/";
 							} else {
 								session.setAttribute("failure",
@@ -145,7 +153,7 @@ public class GeneralController {
 
 								if (theatre.isApproved()) {
 									session.setAttribute("success", "Login Success As Theatre");
-									session.setAttribute("theatre", "theatre");
+									session.setAttribute("theatre", theatre);
 									return "redirect:/";
 								} else {
 									session.setAttribute("failure",
@@ -179,7 +187,7 @@ public class GeneralController {
 		session.removeAttribute("customer");
 		session.removeAttribute("admin");
 		session.removeAttribute("theatre");
-		session.setAttribute("success", "Logout Success");
+		session.setAttribute("failure", "Logout Success");
 		return "redirect:/";
 	}
 	
@@ -222,6 +230,31 @@ public class GeneralController {
 		}
 		
   }
+	
+	@GetMapping("/admin/add-movie")
+	public String addMovie(HttpSession session,ModelMap map ) {
+		if(session.getAttribute("admin")!=null) 
+			return "add-movie.html";
+		else {
+			session.setAttribute("failure", "invalid session login again");
+			return "redirect:/login";
+		}
+	}
+	@PostMapping("/admin/add-movie")
+	public String addMovie(HttpSession session,ModelMap map,Movie movie,@RequestParam MultipartFile image) {
+		
+		if(session.getAttribute("admin")!=null) {
+			movie.setMovie_poster(cloudinaryHelper.saveMoviePosterToCloud(image));
+			movieRepository.save(movie);
+			session.setAttribute("success", "Movie Added Success");
+			return "redirect:/";
+		}
+		else {
+			session.setAttribute("failure", "Invalid Session,Login Again");
+			return "redirect:/login";
+		}
+		
+	}
 }
 
 

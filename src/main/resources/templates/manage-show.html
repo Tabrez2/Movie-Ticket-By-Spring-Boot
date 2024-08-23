@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+	<th:block th:insert="~{fragments/message.html}"></th:block>
+	<h1>Manage Show</h1>
+	<table border="1">
+		
+		<tr>
+		
+		  <th>Screen Name</th>
+		  <th>Timing</th>
+		  <th>Movie</th>
+		  <th>Ticket Price</th>
+		  <th>Release Date</th>
+		  <th>Booking</th>
+		
+		</tr>
+	
+		<tr th:each="show:${shows}">
+		  <td th:text="${show.screen.name}">		    
+		  </td>
+		   <td>
+		   <span th:if="${show.timing==1}">Morning-10AM</span>
+		   <span th:if="${show.timing==2}">Afternoon-1PM</span>
+		   <span th:if="${show.timing==3}">Evening-4PM</span>
+		   <span th:if="${show.timing==4}">Evening-7PM</span>
+		   <span th:if="${show.timing==5}">Night-10PM</span>	  	   
+		   </td>
+		   
+		   <td><span th:text="${show.movie.name}"></span><br>
+		   <img alt="image" height="100px"  width="200px" th:src="${show.movie.movie_poster}">  
+		   </td>
+		   
+           <td th:text="'&#8377'+ ${show.ticketPrice}"></td>
+		   <td th:text="${show.movie.releaseDate}"></td>  
+		   <td><a th:href="'/theatre/open-booking/'+${show.id}"
+		       th:if="${!show.available}"><button>Open</button></a>
+		       
+		       <a th:href="'/theatre/close-booking/'+${show.id}"
+		          th:if="${show.available}"><button>Close</button></a>
+		   
+		   </td>
+		   
+		   		
+		   
+		   
+		</tr>
+		
+	
+	
+	
+	</table>
+
+</body>
+</html>
